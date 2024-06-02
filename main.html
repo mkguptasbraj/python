@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting DApp</title>
+	    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #008080;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="radio"] {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #008080;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #voteResults {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #voteResults h3 {
+            color: #008080;
+            margin-bottom: 10px;
+        }
+
+        ul#voteList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul#voteList li {
+            margin-bottom: 5px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
+</head>
+<body>
+    <h2>Voting DApp</h2>
+
+    <form id="voteForm">
+        <label><input type="radio" id="option1" name="option" value="0">BTECH</label>
+        <label><input type="radio" id="option2" name="option" value="1">MTECH</label>
+        <label><input type="radio" id="option3" name="option" value="2">PHD</label>
+        <label><input type="radio" id="option4" name="option" value="3">MSC</label>
+        <label><input type="radio" id="option5" name="option" value="4">MCA</label>
+
+        <button type="button" onclick="vote()">Vote</button>
+    </form>
+
+    <div id="voteResults">
+        <h3>Current Vote Counts:</h3>
+        <ul id="voteList">
+            <!-- Display Vote Count Here -->
+        </ul>
+    </div>
+
+    <script>
+        // Replace with your contract address and ABI
+        const contractAddress = '0x0f38ddC770De962C8F16d2A261Bf08DC4FE17f2e';
+        const contractABI = [
+            {  //used for functin 1 i.e. vote
+                "constant": false,
+                "inputs": [{"name": "option", "type": "uint256"}],
+                "name": "vote",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            { //used for functin 2 i.e. getVoteCount
+                "constant": true,
+                "inputs": [{"name": "option", "type": "uint256"}],
+                "name": "getVoteCount",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const web3 = new Web3(Web3.givenProvider);
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        async function vote() {
+            const selectedOption = document.querySelector('input[name="option"]:checked');
+            if (!selectedOption) {
+                alert('Please select an option to vote.');
+                return;
+            }
+
+            const option = parseInt(selectedOption.value);
+            try {
+                const accounts = await web3.eth.getAccounts();
+                const sender = accounts[0];
+                if (!sender) {
+                    alert('Please connect your Ethereum account.');
+                    return;
+                }
+
+                await contract.methods.vote(option).send({ from: sender });
+                alert('Vote submitted successfully!');
+                updateVoteCounts(); //to update vote count
+            } catch (error) {
+                console.error('Error submitting vote:', error);
+                alert('Failed to submit vote. Please check the console for details.');
+            }
+        }
+
+        async function updateVoteCounts() {
+        const voteOptions = ['BTECH', 'MTECH', 'PHD', 'MSC', 'MCA'];
+        const voteList = document.getElementById('voteList');
+        voteList.innerHTML = ''; // Clear previous vote counts
+            try {
+                for (let i = 0; i < voteOptions.length; i++) {
+                    const voteCount = await contract.methods.getVoteCount(i).call(); // access the getVoteCount function
+                    const optionLabel = voteOptions[i];
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${optionLabel} : ${voteCount} votes`;
+                    voteList.appendChild(listItem);
+                }
+                } catch (error) {
+                    console.error('Error retrieving vote counts:', error);
+                    // Optionally, you can display an error message to the user
+                    voteList.innerHTML = '<li>Error retrieving vote counts. Please try again later.</li>';
+                }
+        }
+     // Initial update of vote counts when the page loads
+        updateVoteCounts();
+    </script>
+<div style="position: fixed; bottom: 10px; right: 10px;">
+    <a href="DATA/votinghtmlpage.txt" target="_blank">HTML</a>
+    <a href="DATA/votingjavascript.txt" target="_blank">SCRIPT</a>
+    <a href="DATA/votingsolidity.txt" target="_blank">SOLIDITY</a>
+    <a href="DATA/votingcomplete.txt" target="_blank">HJS</a>
+    </div>
+</body>
+</html>

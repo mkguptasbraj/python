@@ -1,0 +1,12 @@
+marks =[70,75,80]
+print(marks)
+print(marks[0])
+print(marks[0:2])
+marks.append(65)
+print(marks)
+marks.insert(0,99)
+print(marks)
+print(99 in marks)
+print(len(marks))
+marks.clear()
+print(marks)
